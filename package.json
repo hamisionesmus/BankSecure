@@ -1,0 +1,37 @@
+{
+  "name": "atm-system-serverless",
+  "version": "1.0.0",
+  "description": "Full-stack ATM banking system with serverless deployment",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd atm-app && npm start",
+    "start-backend": "cd atm-backend && node server.js",
+    "deploy": "./deploy.sh",
+    "deploy-free": "deploy-free.bat",
+    "deploy-free-unix": "./deploy-free.sh",
+    "vercel-deploy": "vercel --prod",
+    "install-all": "npm install && cd atm-app && npm install && cd ../atm-backend && npm install",
+    "test-api": "cd atm-backend && node server.js",
+    "setup-free": "echo 'Run setup-free-database.sql in Neon SQL Editor'"
+  },
+  "keywords": [
+    "atm",
+    "banking",
+    "serverless",
+    "react",
+    "mysql",
+    "vercel"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "your-repo-url"
+  }
+}
