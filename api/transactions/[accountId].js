@@ -1,14 +1,32 @@
-const { Pool } = require('pg');
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_6v4KrEMDJNqt@ep-tiny-pond-adclgmi5-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
-  ssl: { rejectUnauthorized: false }
-});
+const { createClient } = require('@supabase/supabase-js');
 
 export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Supabase client configuration
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({
+      error: 'Supabase configuration missing',
+      message: 'SUPABASE_URL and SUPABASE_ANON_KEY environment variables required'
+    });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { accountId } = req.query;
   console.log('📊 Transaction history request for account:', accountId);
@@ -20,19 +38,30 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid account ID' });
   }
 
-  const query = 'SELECT id, type, amount, date, account_id FROM transactions WHERE account_id = $1 ORDER BY date DESC LIMIT 10';
-  console.log('🔍 Executing transaction history query:', query, 'with accountId:', accountIdNum);
-
   try {
-    const result = await pool.query(query, [accountIdNum]);
-    console.log('✅ Transaction history retrieved:', result.rows.length, 'transactions');
-    console.log('📋 Transaction data:', JSON.stringify(result.rows, null, 2));
+    console.log('🔍 Fetching transaction history from Supabase');
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('id, type, amount, date, account_id')
+      .eq('account_id', accountIdNum)
+      .order('date', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.log('❌ Supabase query error:', error);
+      return res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+
+    console.log('✅ Transaction history retrieved:', data?.length || 0, 'transactions');
+    console.log('📋 Transaction data:', JSON.stringify(data, null, 2));
 
     // Ensure we return an array even if empty
     res.setHeader('Content-Type', 'application/json');
-    res.json(result.rows || []);
+    res.json(data || []);
+
   } catch (err) {
-    console.error('❌ Error fetching transaction history:', err);
-    res.status(500).json({ error: 'Database error: ' + err.message });
+    console.error('❌ Transaction history error:', err);
+    res.status(500).json({ error: 'Transaction service error', message: err.message });
   }
 }

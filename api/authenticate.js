@@ -1,5 +1,4 @@
-import pkg from 'pg';
-const { Client } = pkg;
+const { createClient } = require('@supabase/supabase-js');
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -16,45 +15,59 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // PostgreSQL client for Neon
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_6v4KrEMDJNqt@ep-tiny-pond-adclgmi5-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
-    ssl: { rejectUnauthorized: false }
-  });
+  // Supabase client configuration
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({
+      error: 'Supabase configuration missing',
+      message: 'SUPABASE_URL and SUPABASE_ANON_KEY environment variables required'
+    });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    await client.connect();
     console.log('🔐 Authentication request received');
 
     const { cardNumber, pin } = req.body;
     console.log('Parsed cardNumber:', cardNumber);
 
-    // Query PostgreSQL database
-    const result = await client.query(
-      'SELECT id, name, card_number FROM customers WHERE card_number = $1 AND pin = $2',
-      [cardNumber, pin]
-    );
+    // Query Supabase database
+    const { data, error } = await supabase
+      .from('customers')
+      .select('id, name, card_number')
+      .eq('card_number', cardNumber)
+      .eq('pin', pin)
+      .single();
 
-    if (result.rows.length > 0) {
-      console.log('✅ Authentication successful for:', result.rows[0].name);
+    if (error) {
+      console.log('❌ Supabase query error:', error);
+      return res.status(200).json({
+        success: false,
+        message: 'Invalid card number or PIN'
+      });
+    }
+
+    if (data) {
+      console.log('✅ Authentication successful for:', data.name);
       return res.status(200).json({
         success: true,
-        customer: result.rows[0]
+        customer: data
       });
     } else {
-      console.log('❌ Authentication failed - invalid credentials');
+      console.log('❌ Authentication failed - no matching customer');
       return res.status(200).json({
         success: false,
         message: 'Invalid card number or PIN'
       });
     }
   } catch (error) {
-    console.error('❌ Database error:', error);
+    console.error('❌ Authentication error:', error);
     return res.status(500).json({
-      error: 'Database connection failed',
+      error: 'Authentication service error',
       message: error.message
     });
-  } finally {
-    await client.end();
   }
 }
