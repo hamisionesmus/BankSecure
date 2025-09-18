@@ -1,4 +1,8 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = 'https://iuvcxrsmgaahqmdmzoau.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -14,12 +18,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  // Supabase client configuration
-  const supabaseUrl = process.env.SUPABASE_URL || 'https://iuvcxrsmgaahqmdmzoau.supabase.co';
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1dmN4cnNtZ2FhaHFtZG16b2F1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxOTI0NzIsImV4cCI6MjA3Mzc2ODQ3Mn0.NQW58uk4YPUiCG4_weoJ1pXXG5Ew872u-zj6uwwrSLQ';
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
     console.log('🔐 Authentication request received');
