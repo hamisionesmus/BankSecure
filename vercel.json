@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "atm-app/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "atm-app/build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/atm-app/$1"
+    }
+  ]
+}
