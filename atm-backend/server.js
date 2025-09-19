@@ -605,6 +605,65 @@ app.post('/api/bank/link-account', (req, res) => {
     });
 });
 
+// NEW: Get Maintenance Records for Technician
+app.get('/api/maintenance/:technicianId', (req, res) => {
+    const { technicianId } = req.params;
+    console.log('📋 Maintenance records request for technician:', technicianId);
+
+    const query = `
+        SELECT m.id, m.maintenance_type, m.description, m.date, m.status, m.notes,
+               t.technician_id, t.name as technician_name,
+               a.atm_id, a.location as atm_location
+        FROM maintenance m
+        JOIN technicians t ON m.technician_id = t.id
+        JOIN atms a ON m.atm_id = a.id
+        WHERE m.technician_id = $1
+        ORDER BY m.date DESC
+        LIMIT 50
+    `;
+
+    db.query(query, [technicianId], (err, results) => {
+        if (err) {
+            console.error('❌ Error fetching maintenance records:', err);
+            return res.status(500).json({ error: 'Database error: ' + err.message });
+        }
+
+        console.log('✅ Maintenance records retrieved:', results.rows.length, 'records');
+
+        // Format the results for the frontend
+        const formattedRecords = results.rows.map(record => ({
+            id: record.id,
+            maintenance_type: record.maintenance_type,
+            description: record.description,
+            date: record.date,
+            technician_id: record.technician_id,
+            atm_id: record.atm_id,
+            status: record.status,
+            notes: record.notes
+        }));
+
+        res.json(formattedRecords || []);
+    });
+});
+
+// NEW: Get ATMs for Technician
+app.get('/api/atms/:technicianId', (req, res) => {
+    const { technicianId } = req.params;
+    console.log('🏧 Fetching ATMs for technician:', technicianId);
+
+    // For now, return all ATMs. In production, filter by technician's assigned bank
+    const query = 'SELECT * FROM atms ORDER BY atm_id';
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('❌ Error fetching ATMs:', err);
+            return res.status(500).json({ error: 'Database error: ' + err.message });
+        }
+
+        console.log('✅ ATMs retrieved:', results.rows.length, 'ATMs');
+        res.json(results.rows || []);
+    });
+});
+
 const PORT =                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
