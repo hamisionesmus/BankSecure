@@ -268,6 +268,343 @@ app.get('/api/test', (req, res) => {
     });
 });
 
+// NEW: Technician Authentication
+app.post('/api/technician-auth', (req, res) => {
+    console.log('🔧 Technician authentication request received:', req.body);
+    const { technicianId, pin } = req.body;
+
+    const query = 'SELECT id, technician_id, name, contact_info, assigned_bank FROM technicians WHERE technician_id = $1';
+    db.query(query, [technicianId], (err, results) => {
+        if (err) {
+            console.error('❌ Database error:', err);
+            return res.status(500).json({ error: err.message });
+        }
+
+        if (results.rows.length > 0) {
+            // Simple PIN validation - in production use proper authentication
+            if (pin === 'tech123') { // Default technician PIN
+                console.log('✅ Technician authentication successful for:', results.rows[0].name);
+                return res.json({
+                    success: true,
+                    technician: results.rows[0]
+                });
+            } else {
+                console.log('❌ Invalid PIN for technician');
+                return res.json({
+                    success: false,
+                    message: 'Invalid PIN'
+                });
+            }
+        } else {
+            console.log('❌ Technician not found');
+            return res.json({
+                success: false,
+                message: 'Technician not found'
+            });
+        }
+    });
+});
+
+// NEW: ATM Replenishment
+app.post('/api/maintenance/replenish', (req, res) => {
+    console.log('🔄 ATM replenishment request received:', req.body);
+    const { atmId, technicianId, supplies } = req.body;
+
+    // Update ATM supplies status
+    const suppliesStatus = supplies.cash ? 'Cash replenished' :
+                          supplies.ink ? 'Ink replenished' :
+                          supplies.paper ? 'Paper replenished' : 'Supplies OK';
+
+    const updateQuery = 'UPDATE atms SET supplies_status = $1, cash_available = $2, last_maintenance = CURRENT_TIMESTAMP WHERE id = $3';
+    const cashAmount = supplies.cash || null;
+
+    db.query(updateQuery, [suppliesStatus, cashAmount, atmId], (err, results) => {
+        if (err) {
+            console.error('❌ ATM update failed:', err);
+            return res.status(500).json({ error: 'Failed to update ATM supplies' });
+        }
+
+        // Log maintenance activity
+        const logQuery = 'INSERT INTO maintenance (maintenance_type, description, technician_id, atm_id, notes) VALUES ($1, $2, $3, $4, $5)';
+        const description = `ATM replenished: ${suppliesStatus}`;
+        const notes = `Supplies: ${JSON.stringify(supplies)}`;
+
+        db.query(logQuery, ['replenish', description, technicianId, atmId, notes], (logErr) => {
+            if (logErr) {
+                console.log('⚠️ Maintenance logging failed:', logErr);
+                // Don't fail the request if logging fails
+            }
+
+            console.log('✅ ATM replenishment completed successfully');
+            res.json({
+                success: true,
+                message: 'ATM replenished successfully',
+                suppliesStatus
+            });
+        });
+    });
+});
+
+// NEW: ATM Diagnostics
+app.post('/api/maintenance/diagnose', (req, res) => {
+    console.log('🔍 ATM diagnostics request received:', req.body);
+    const { atmId, technicianId } = req.body;
+
+    // Get ATM current status
+    const atmQuery = 'SELECT * FROM atms WHERE id = $1';
+    db.query(atmQuery, [atmId], (err, results) => {
+        if (err || !results.rows.length) {
+            console.log('❌ ATM not found:', err);
+            return res.json({ success: false, message: 'ATM not found' });
+        }
+
+        const atm = results.rows[0];
+
+        // Perform diagnostic checks
+        const diagnostics = {
+            atmId: atm.atm_id,
+            location: atm.location,
+            operational: atm.is_operational,
+            suppliesStatus: atm.supplies_status,
+            cashAvailable: atm.cash_available,
+            lastMaintenance: atm.last_maintenance,
+            issues: []
+        };
+
+        // Check for issues
+        if (atm.cash_available < 1000) {
+            diagnostics.issues.push('Low cash reserves');
+        }
+        if (!atm.is_operational) {
+            diagnostics.issues.push('ATM marked as non-operational');
+        }
+        if (atm.supplies_status !== 'OK') {
+            diagnostics.issues.push(`Supplies issue: ${atm.supplies_status}`);
+        }
+
+        // Calculate health score
+        let healthScore = 100;
+        if (diagnostics.issues.length > 0) {
+            healthScore -= diagnostics.issues.length * 20;
+        }
+        diagnostics.healthScore = Math.max(0, healthScore);
+
+        // Log diagnostic activity
+        const logQuery = 'INSERT INTO maintenance (maintenance_type, description, technician_id, atm_id, notes, status) VALUES ($1, $2, $3, $4, $5, $6)';
+        const description = `ATM diagnostics performed - Health: ${healthScore}%`;
+        const notes = `Issues found: ${diagnostics.issues.join(', ') || 'None'}`;
+        const status = diagnostics.issues.length > 0 ? 'issues_found' : 'healthy';
+
+        db.query(logQuery, ['diagnose', description, technicianId, atmId, notes, status], (logErr) => {
+            if (logErr) {
+                console.log('⚠️ Diagnostic logging failed:', logErr);
+            }
+
+            console.log('✅ ATM diagnostics completed:', diagnostics);
+            res.json({
+                success: true,
+                diagnostics,
+                message: diagnostics.issues.length > 0 ?
+                    `Diagnostics completed. ${diagnostics.issues.length} issues found.` :
+                    'ATM diagnostics completed. All systems healthy.'
+            });
+        });
+    });
+});
+
+// NEW: ATM Upgrade
+app.post('/api/maintenance/upgrade', (req, res) => {
+    console.log('⬆️ ATM upgrade request received:', req.body);
+    const { atmId, technicianId, upgradeType, version } = req.body;
+
+    // Validate upgrade type
+    const validTypes = ['hardware', 'software', 'firmware'];
+    if (!validTypes.includes(upgradeType)) {
+        return res.json({
+            success: false,
+            message: 'Invalid upgrade type. Must be: hardware, software, or firmware'
+        });
+    }
+
+    // Update ATM with upgrade info
+    const upgradeNotes = `${upgradeType} upgraded to ${version || 'latest'}`;
+    const updateQuery = 'UPDATE atms SET supplies_status = $1, last_maintenance = CURRENT_TIMESTAMP WHERE id = $2';
+
+    db.query(updateQuery, [upgradeNotes, atmId], (err, results) => {
+        if (err) {
+            console.error('❌ ATM upgrade update failed:', err);
+            return res.status(500).json({ error: 'Failed to update ATM upgrade status' });
+        }
+
+        // Log upgrade activity
+        const logQuery = 'INSERT INTO maintenance (maintenance_type, description, technician_id, atm_id, notes, status) VALUES ($1, $2, $3, $4, $5, $6)';
+        const description = `ATM ${upgradeType} upgrade performed`;
+
+        db.query(logQuery, ['upgrade', description, technicianId, atmId, upgradeNotes, 'completed'], (logErr) => {
+            if (logErr) {
+                console.log('⚠️ Upgrade logging failed:', logErr);
+            }
+
+            console.log('✅ ATM upgrade completed successfully');
+            res.json({
+                success: true,
+                message: `ATM ${upgradeType} upgrade completed successfully`,
+                upgradeDetails: {
+                    type: upgradeType,
+                    version: version || 'latest',
+                    timestamp: new Date().toISOString()
+                }
+            });
+        });
+    });
+});
+
+// NEW: Bank Transaction Authorization
+app.post('/api/bank/authorize', (req, res) => {
+    console.log('🏦 Bank transaction authorization request received:', req.body);
+    const { transactionType, accountId, amount, cardNumber } = req.body;
+
+    // Validate transaction type
+    const validTypes = ['withdraw', 'deposit', 'transfer'];
+    if (!validTypes.includes(transactionType)) {
+        return res.json({
+            success: false,
+            message: 'Invalid transaction type'
+        });
+    }
+
+    // Check if account exists and belongs to the card
+    const accountQuery = 'SELECT id, balance, customer_id FROM accounts WHERE id = $1';
+    db.query(accountQuery, [accountId], (err, accountResults) => {
+        if (err || !accountResults.rows.length) {
+            console.log('❌ Account not found:', err);
+            return res.json({
+                success: false,
+                message: 'Account not found'
+            });
+        }
+
+        const account = accountResults.rows[0];
+
+        // Verify card belongs to account owner
+        const customerQuery = 'SELECT id, card_number FROM customers WHERE id = $1';
+        db.query(customerQuery, [account.customer_id], (err, customerResults) => {
+            if (err || !customerResults.rows.length || customerResults.rows[0].card_number !== cardNumber) {
+                console.log('❌ Card verification failed');
+                return res.json({
+                    success: false,
+                    message: 'Card verification failed'
+                });
+            }
+
+            // Authorization logic based on transaction type
+            let authorized = false;
+            let message = '';
+
+            switch (transactionType) {
+                case 'withdraw':
+                    if (account.balance >= amount) {
+                        authorized = true;
+                        message = 'Withdrawal authorized';
+                    } else {
+                        authorized = false;
+                        message = 'Insufficient funds';
+                    }
+                    break;
+
+                case 'deposit':
+                    authorized = true;
+                    message = 'Deposit authorized';
+                    break;
+
+                case 'transfer':
+                    if (account.balance >= amount) {
+                        authorized = true;
+                        message = 'Transfer authorized';
+                    } else {
+                        authorized = false;
+                        message = 'Insufficient funds for transfer';
+                    }
+                    break;
+            }
+
+            console.log(`✅ Bank authorization ${authorized ? 'approved' : 'denied'}: ${message}`);
+
+            res.json({
+                success: true,
+                authorized,
+                message,
+                account: {
+                    id: account.id,
+                    balance: account.balance
+                }
+            });
+        });
+    });
+});
+
+// NEW: Bank Account Linking
+app.post('/api/bank/link-account', (req, res) => {
+    console.log('🔗 Bank account linking request received:', req.body);
+    const { cardNumber } = req.body;
+
+    if (!cardNumber) {
+        return res.json({
+            success: false,
+            message: 'Card number is required'
+        });
+    }
+
+    // Find customer by card number
+    const customerQuery = 'SELECT id, name, card_number FROM customers WHERE card_number = $1';
+    db.query(customerQuery, [cardNumber], (err, customerResults) => {
+        if (err || !customerResults.rows.length) {
+            console.log('❌ Customer not found for card:', cardNumber);
+            return res.json({
+                success: false,
+                message: 'Card not found in system'
+            });
+        }
+
+        const customer = customerResults.rows[0];
+
+        // Get all accounts for this customer
+        const accountsQuery = 'SELECT * FROM accounts WHERE customer_id = $1';
+        db.query(accountsQuery, [customer.id], (err, accountsResults) => {
+            if (err) {
+                console.log('❌ Error fetching accounts:', err);
+                return res.status(500).json({ error: 'Failed to fetch accounts' });
+            }
+
+            if (!accountsResults.rows.length) {
+                console.log('❌ No accounts found for customer');
+                return res.json({
+                    success: false,
+                    message: 'No accounts found for this card'
+                });
+            }
+
+            console.log(`✅ Account linking successful for ${customer.name}: ${accountsResults.rows.length} accounts found`);
+
+            res.json({
+                success: true,
+                customer: {
+                    id: customer.id,
+                    name: customer.name,
+                    cardNumber: customer.card_number
+                },
+                accounts: accountsResults.rows.map(account => ({
+                    id: account.id,
+                    accountNumber: account.account_number,
+                    balance: parseFloat(account.balance),
+                    type: account.type
+                })),
+                message: `Found ${accountsResults.rows.length} account(s) linked to card ${cardNumber}`
+            });
+        });
+    });
+});
+
 const PORT =                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
