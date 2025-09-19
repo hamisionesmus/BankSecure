@@ -7,9 +7,65 @@
       "config": {
         "distDir": "atm-app/build"
       }
+    },
+    {
+      "src": "api/authenticate.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/accounts/[customerId].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/transactions/[accountId].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/balance/[accountId].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/withdraw.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/deposit.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/transfer.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/technician-auth.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/maintenance/replenish.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/maintenance/diagnose.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/maintenance/upgrade.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/bank/authorize.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/bank/link-account.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/atm-app/$1"
