@@ -96,7 +96,7 @@ ON CONFLICT (atm_id) DO NOTHING;
 
 -- Insert sample technician
 INSERT INTO technicians (technician_id, name, contact_info, assigned_bank)
-VALUES ('TECH001', 'John Maintenance', '+1234567890', 1)
+VALUES ('TECH001', 'ATM Technician', '+1234567890', 1)
 ON CONFLICT (technician_id) DO NOTHING;
 
 -- Insert sample maintenance record (only if ATM and technician exist)
