@@ -89,7 +89,7 @@ INSERT INTO customers (name, pin, card_number) VALUES ('Manasha', '1234', '12345
 INSERT INTO accounts (account_number, balance, customer_id) VALUES ('ACC001', 1000.00, 1) ON CONFLICT (account_number) DO NOTHING;
 
 -- Insert sample technician
-INSERT INTO technicians (technician_id, name, contact_info, assigned_bank) VALUES ('TECH001', 'John Smith', 'john@bank.com', 1) ON CONFLICT (technician_id) DO NOTHING;
+INSERT INTO technicians (technician_id, name, contact_info, assigned_bank) VALUES ('TECH001', 'Olatunde', 'olatunde@bank.com', 1) ON CONFLICT (technician_id) DO NOTHING;
 
 -- Insert sample ATMs
 INSERT INTO atms (atm_id, location, cash_available, supplies_status, is_operational) VALUES
