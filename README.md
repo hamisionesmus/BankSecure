@@ -24,15 +24,6 @@ atm-system/
 │   ├── .env.example          # Environment variables template
 │   └── .env                  # Environment variables (gitignored)
 │
-├── api/                       # Vercel Serverless Functions
-│   ├── authenticate.js        # User authentication endpoint
-│   ├── deposit.js            # Deposit transaction endpoint
-│   ├── withdraw.js           # Withdrawal transaction endpoint
-│   ├── transfer.js           # Fund transfer endpoint
-│   ├── accounts/             # Account management endpoints
-│   ├── balance/              # Balance inquiry endpoints
-│   └── transactions/         # Transaction history endpoints
-│
 ├── vercel.json               # Root Vercel configuration
 ├── package.json              # Root package configuration
 └── README.md                 # Project documentation
@@ -275,6 +266,3 @@ atm-system/
 - Machine learning for fraud detection
 - Real-time notifications system
 
-## License
-
-MIT License - Open source software license allowing free use, modification, and distribution.
