@@ -34,7 +34,7 @@ CREATE TABLE atms (
 );
 
 -- Insert sample data
-INSERT INTO customers (name, pin, card_number) VALUES ('Hamisi', '1234', '123456789');
+INSERT INTO customers (name, pin, card_number) VALUES ('Manasha', '1234', '123456789');
 INSERT INTO accounts (account_number, balance, customer_id) VALUES ('ACC001', 1000.00, 1);
 INSERT INTO atms (location, cash_available) VALUES ('Main Street', 10000.00);
 

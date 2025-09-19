@@ -24,5 +24,5 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 -- Insert sample data
-INSERT INTO customers (name, pin, card_number) VALUES ('Hamisi', '1234', '123456789') ON CONFLICT (card_number) DO NOTHING;
+INSERT INTO customers (name, pin, card_number) VALUES ('Manasha', '1234', '123456789') ON CONFLICT (card_number) DO NOTHING;
 INSERT INTO accounts (account_number, balance, customer_id) VALUES ('ACC001', 1000.00, 1) ON CONFLICT (account_number) DO NOTHING;

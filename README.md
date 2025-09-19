@@ -114,7 +114,7 @@ atm-system/
 - `account_id` - Foreign key to accounts table (INTEGER)
 
 ### Sample Data
-- Customer: Hamisi (Card: 123456789, PIN: 1234)
+- Customer: Manasha (Card: 123456789, PIN: 1234)
 - Account: ACC001 with initial balance of $1000.00
 
 ## API Endpoints

@@ -46,12 +46,12 @@ db.connect((err) => {
         if (index >= sqlStatements.length) {
             console.log('All tables created successfully');
 
-            // Update customer name to Hamisi
-            db.query('UPDATE customers SET name = $1 WHERE card_number = $2', ['Hamisi', '123456789'], (err, results) => {
+            // Update customer name to Manasha
+            db.query('UPDATE customers SET name = $1 WHERE card_number = $2', ['Manasha', '123456789'], (err, results) => {
                 if (err) {
                     console.error('Error updating customer name:', err);
                 } else {
-                    console.log('Customer name updated to Hamisi');
+                    console.log('Customer name updated to Manasha');
                 }
             });
 
