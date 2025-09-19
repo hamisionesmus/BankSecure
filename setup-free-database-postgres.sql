@@ -1,5 +1,6 @@
--- FREE DATABASE SETUP FOR SUPABASE (PostgreSQL)
--- Copy and paste this into Supabase SQL Editor
+-- FREE DATABASE SETUP FOR NEON/SUPABASE (PostgreSQL)
+-- Copy and paste this into your PostgreSQL database SQL Editor
+-- Works with Neon, Supabase, or any PostgreSQL service
 
 -- Create database tables
 CREATE TABLE customers (
