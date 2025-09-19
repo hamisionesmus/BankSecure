@@ -184,7 +184,6 @@ atm-system/
 ## Development Workflow
 
 ### Local Development Setup
-1. Clone repository from GitHub
 2. Install dependencies for frontend and backend
 3. Set up PostgreSQL database locally
 4. Configure environment variables
@@ -230,13 +229,6 @@ atm-system/
 - Backup and recovery procedures
 
 ## Monitoring and Maintenance
-
-### Application Monitoring
-- Error tracking and reporting
-- Performance metrics collection
-- User analytics and behavior tracking
-- System health monitoring
-- Automated alerting for issues
 
 ### Database Maintenance
 - Regular backup scheduling
