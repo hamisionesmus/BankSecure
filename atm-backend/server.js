@@ -664,6 +664,149 @@ app.get('/api/atms/:technicianId', (req, res) => {
     });
 });
 
+// NEW: Get user settings
+app.get('/api/settings/:customerId', (req, res) => {
+    const { customerId } = req.params;
+    console.log('⚙️ Fetching settings for customer:', customerId);
+
+    // Get all settings in parallel
+    const profileQuery = 'SELECT * FROM user_profiles WHERE customer_id = $1';
+    const preferencesQuery = 'SELECT * FROM user_preferences WHERE customer_id = $1';
+    const notificationsQuery = 'SELECT * FROM notification_preferences WHERE customer_id = $1';
+
+    Promise.all([
+        db.query(profileQuery, [customerId]),
+        db.query(preferencesQuery, [customerId]),
+        db.query(notificationsQuery, [customerId])
+    ]).then(([profileResult, preferencesResult, notificationsResult]) => {
+        const settings = {
+            profile: profileResult.rows[0] || null,
+            preferences: preferencesResult.rows[0] || null,
+            notifications: notificationsResult.rows[0] || null
+        };
+
+        console.log('✅ Settings retrieved for customer:', customerId);
+        res.json(settings);
+    }).catch(err => {
+        console.error('❌ Error fetching settings:', err);
+        res.status(500).json({ error: 'Failed to fetch settings' });
+    });
+});
+
+// NEW: Update user profile
+app.put('/api/settings/profile/:customerId', (req, res) => {
+    const { customerId } = req.params;
+    const { name, email, phone } = req.body;
+    console.log('📝 Updating profile for customer:', customerId, { name, email, phone });
+
+    // Update customer name
+    const customerQuery = 'UPDATE customers SET name = $1 WHERE id = $2';
+    // Upsert user profile
+    const profileQuery = `
+        INSERT INTO user_profiles (customer_id, email, phone, updated_at)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+        ON CONFLICT (customer_id)
+        DO UPDATE SET email = EXCLUDED.email, phone = EXCLUDED.phone, updated_at = CURRENT_TIMESTAMP
+    `;
+
+    Promise.all([
+        db.query(customerQuery, [name, customerId]),
+        db.query(profileQuery, [customerId, email, phone])
+    ]).then(() => {
+        console.log('✅ Profile updated successfully');
+        res.json({ success: true, message: 'Profile updated successfully' });
+    }).catch(err => {
+        console.error('❌ Error updating profile:', err);
+        res.status(500).json({ error: 'Failed to update profile' });
+    });
+});
+
+// NEW: Update user PIN
+app.put('/api/settings/security/:customerId', (req, res) => {
+    const { customerId } = req.params;
+    const { currentPin, newPin } = req.body;
+    console.log('🔐 Updating PIN for customer:', customerId);
+
+    // First verify current PIN
+    const verifyQuery = 'SELECT pin FROM customers WHERE id = $1';
+    db.query(verifyQuery, [customerId], (err, result) => {
+        if (err || !result.rows.length) {
+            return res.status(500).json({ error: 'Customer not found' });
+        }
+
+        if (result.rows[0].pin !== currentPin) {
+            return res.json({ success: false, message: 'Current PIN is incorrect' });
+        }
+
+        // Update PIN
+        const updateQuery = 'UPDATE customers SET pin = $1 WHERE id = $2';
+        db.query(updateQuery, [newPin, customerId], (updateErr) => {
+            if (updateErr) {
+                console.error('❌ Error updating PIN:', updateErr);
+                return res.status(500).json({ error: 'Failed to update PIN' });
+            }
+
+            console.log('✅ PIN updated successfully');
+            res.json({ success: true, message: 'PIN updated successfully' });
+        });
+    });
+});
+
+// NEW: Update user preferences
+app.put('/api/settings/preferences/:customerId', (req, res) => {
+    const { customerId } = req.params;
+    const { theme, biometric_enabled, auto_logout } = req.body;
+    console.log('🎨 Updating preferences for customer:', customerId, { theme, biometric_enabled, auto_logout });
+
+    const query = `
+        INSERT INTO user_preferences (customer_id, theme, biometric_enabled, auto_logout, updated_at)
+        VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+        ON CONFLICT (customer_id)
+        DO UPDATE SET theme = EXCLUDED.theme, biometric_enabled = EXCLUDED.biometric_enabled,
+                      auto_logout = EXCLUDED.auto_logout, updated_at = CURRENT_TIMESTAMP
+    `;
+
+    db.query(query, [customerId, theme, biometric_enabled, auto_logout], (err) => {
+        if (err) {
+            console.error('❌ Error updating preferences:', err);
+            return res.status(500).json({ error: 'Failed to update preferences' });
+        }
+
+        console.log('✅ Preferences updated successfully');
+        res.json({ success: true, message: 'Preferences updated successfully' });
+    });
+});
+
+// NEW: Update notification preferences
+app.put('/api/settings/notifications/:customerId', (req, res) => {
+    const { customerId } = req.params;
+    const { transaction_alerts, low_balance_warnings, monthly_statements, security_alerts } = req.body;
+    console.log('🔔 Updating notification preferences for customer:', customerId, {
+        transaction_alerts, low_balance_warnings, monthly_statements, security_alerts
+    });
+
+    const query = `
+        INSERT INTO notification_preferences (customer_id, transaction_alerts, low_balance_warnings, monthly_statements, security_alerts, updated_at)
+        VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+        ON CONFLICT (customer_id)
+        DO UPDATE SET transaction_alerts = EXCLUDED.transaction_alerts,
+                      low_balance_warnings = EXCLUDED.low_balance_warnings,
+                      monthly_statements = EXCLUDED.monthly_statements,
+                      security_alerts = EXCLUDED.security_alerts,
+                      updated_at = CURRENT_TIMESTAMP
+    `;
+
+    db.query(query, [customerId, transaction_alerts, low_balance_warnings, monthly_statements, security_alerts], (err) => {
+        if (err) {
+            console.error('❌ Error updating notification preferences:', err);
+            return res.status(500).json({ error: 'Failed to update notification preferences' });
+        }
+
+        console.log('✅ Notification preferences updated successfully');
+        res.json({ success: true, message: 'Notification preferences updated successfully' });
+    });
+});
+
 const PORT =                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

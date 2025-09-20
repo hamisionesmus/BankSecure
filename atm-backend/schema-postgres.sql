@@ -84,6 +84,44 @@ CREATE TABLE IF NOT EXISTS maintenance (
     notes TEXT
 );
 
+-- User profiles table (extended customer information)
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER REFERENCES customers(id) UNIQUE,
+    email VARCHAR(255),
+    phone VARCHAR(20),
+    address TEXT,
+    date_of_birth DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User preferences table
+CREATE TABLE IF NOT EXISTS user_preferences (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER REFERENCES customers(id) UNIQUE,
+    theme VARCHAR(20) DEFAULT 'light',
+    language VARCHAR(10) DEFAULT 'en',
+    currency VARCHAR(3) DEFAULT 'USD',
+    biometric_enabled BOOLEAN DEFAULT false,
+    auto_logout BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Notification preferences table
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER REFERENCES customers(id) UNIQUE,
+    transaction_alerts BOOLEAN DEFAULT true,
+    low_balance_warnings BOOLEAN DEFAULT true,
+    monthly_statements BOOLEAN DEFAULT true,
+    security_alerts BOOLEAN DEFAULT true,
+    marketing_emails BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Insert sample data
 INSERT INTO customers (name, pin, card_number) VALUES ('Manasha', '1234', '123456789') ON CONFLICT (card_number) DO NOTHING;
 INSERT INTO accounts (account_number, balance, customer_id) VALUES ('ACC001', 1000.00, 1) ON CONFLICT (account_number) DO NOTHING;
@@ -97,6 +135,21 @@ INSERT INTO atms (atm_id, location, cash_available, supplies_status, is_operatio
 ('ATM002', 'Downtown Plaza', 8500.00, 'OK', true),
 ('ATM003', 'Airport Terminal', 12000.00, 'Low Paper', true)
 ON CONFLICT (atm_id) DO NOTHING;
+
+-- Insert sample user profile for Manasha
+INSERT INTO user_profiles (customer_id, email, phone) VALUES
+(1, 'manasha@example.com', '+1234567890')
+ON CONFLICT (customer_id) DO NOTHING;
+
+-- Insert sample user preferences for Manasha
+INSERT INTO user_preferences (customer_id, theme, biometric_enabled, auto_logout) VALUES
+(1, 'light', false, true)
+ON CONFLICT (customer_id) DO NOTHING;
+
+-- Insert sample notification preferences for Manasha
+INSERT INTO notification_preferences (customer_id, transaction_alerts, low_balance_warnings, monthly_statements, security_alerts) VALUES
+(1, true, true, true, true)
+ON CONFLICT (customer_id) DO NOTHING;
 
 -- Insert sample technician data
 INSERT INTO technicians (technician_id, name, contact_info, assigned_bank) VALUES ('TECH001', 'ATM Technician', '+1234567890', 1) ON CONFLICT (technician_id) DO NOTHING;
