@@ -1,268 +1,202 @@
 # ATM Banking System
 
-A complete full-stack banking application featuring secure authentication, real-time transactions, and responsive design across all devices.
+A complete full-stack banking application featuring secure authentication, real-time transactions, and responsive design across all devices. This system includes both customer banking operations and ATM technician maintenance functionality.
 
-## Project Structure
+## 🚀 Features Implemented
+
+### ✅ Customer Features
+- **PIN-based authentication** with secure session management
+- **Account balance inquiry** with real-time balance updates
+- **Cash deposit and withdrawal** with transaction validation
+- **Fund transfers** between accounts with atomic transactions
+- **Transaction history** with complete audit trail
+- **User profile management** (name, contact info)
+- **Security settings** (PIN change functionality)
+- **Notification preferences** (transaction alerts, low balance warnings)
+- **App preferences** (theme settings, biometric login, auto-logout)
+
+### ✅ Technician Features
+- **ATM diagnostics** with health score calculation
+- **Cash replenishment** with supply status tracking
+- **Hardware/software upgrades** with version tracking
+- **Maintenance logging** with detailed records
+- **System status monitoring** with operational status
+
+### ✅ Technical Features
+- **Responsive design** optimized for mobile, tablet, and desktop
+- **Material Design UI** with smooth animations
+- **Real-time data updates** with automatic refresh
+- **Secure API endpoints** with input validation
+- **Database integration** with PostgreSQL
+- **Error handling** with user-friendly notifications
+
+## 🛠️ Technologies Used
+
+### Frontend
+- **React 19** with TypeScript
+- **Material-UI (MUI)** for components
+- **Framer Motion** for animations
+- **Axios** for API calls
+- **Recharts** for data visualization
+- **SweetAlert2** for notifications
+
+### Backend
+- **Node.js** with Express.js
+- **PostgreSQL** database
+- **pg (node-postgres)** client
+- **CORS** and security middleware
+- **Environment variable** management
+
+### Deployment
+- **Vercel** for frontend hosting
+- **Render** for backend hosting
+- **Neon** for PostgreSQL database
+
+## 📋 Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- PostgreSQL database
+- Git
+
+## 🚀 How to Run Locally
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/hamisionesmus/BankSecure.git
+cd BankSecure
+```
+
+### 2. Install Dependencies
+```bash
+# Install all dependencies at once
+npm run install-all
+
+# Or install individually:
+npm install                    # Root dependencies
+cd atm-app && npm install     # Frontend dependencies
+cd ../atm-backend && npm install  # Backend dependencies
+```
+
+### 3. Set Up Database
+- Create a PostgreSQL database
+- Run the schema file: `atm-backend/schema-postgres.sql`
+- Update environment variables in `atm-backend/.env`
+
+### 4. Start Development Servers
+```bash
+# Terminal 1: Start backend
+npm run start-backend
+
+# Terminal 2: Start frontend
+cd atm-app
+npm start
+```
+
+### 5. Access the Application
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+
+## 🔐 Default Test Credentials
+
+### Customer Login
+- **Card Number**: `123456789`
+- **PIN**: `1234`
+
+### Technician Login
+- **Technician ID**: `tech123`
+- **PIN**: `tech123`
+
+## 📁 Project Structure
 
 ```
 atm-system/
-├── atm-app/                    # React Frontend Application
-│   ├── public/                 # Static assets and build files
-│   ├── src/                    # React source code
-│   │   ├── components/         # Reusable UI components
-│   │   ├── App.tsx            # Main application component
-│   │   ├── index.tsx          # Application entry point
-│   │   └── ...                 # Additional React files
-│   ├── package.json           # Frontend dependencies
-│   ├── tsconfig.json          # TypeScript configuration
-│   └── vercel.json            # Vercel deployment configuration
-│
-├── atm-backend/                # Node.js Backend Server
-│   ├── server.js              # Express server with API endpoints
-│   ├── schema-postgres.sql    # PostgreSQL database schema
-│   ├── package.json           # Backend dependencies
-│   ├── .env.example          # Environment variables template
-│   └── .env                  # Environment variables (gitignored)
-│
-├── vercel.json               # Root Vercel configuration
-├── package.json              # Root package configuration
-└── README.md                 # Project documentation
+├── atm-app/                    # React Frontend
+│   ├── src/
+│   │   ├── components/         # UI Components
+│   │   ├── App.tsx            # Main App Component
+│   │   └── ...
+│   └── package.json
+├── atm-backend/                # Node.js Backend
+│   ├── server.js              # Express Server
+│   ├── schema-postgres.sql    # Database Schema
+│   └── package.json
+├── api/                       # Vercel Serverless Functions
+├── vercel.json               # Deployment Config
+└── README.md
 ```
 
-## Technologies Used
-
-### Frontend Technologies
-- **React 19** - Modern JavaScript library for building user interfaces
-- **TypeScript** - Typed superset of JavaScript for enhanced development
-- **Material-UI (MUI)** - React component library implementing Material Design
-- **Framer Motion** - Animation library for React applications
-- **Axios** - HTTP client for making API requests
-- **Recharts** - Chart library for data visualization
-- **SweetAlert2** - Modern alert and modal library
-
-### Backend Technologies
-- **Node.js** - JavaScript runtime environment
-- **Express.js** - Web application framework for Node.js
-- **PostgreSQL** - Advanced open-source relational database
-- **pg (node-postgres)** - PostgreSQL client for Node.js
-- **CORS** - Cross-origin resource sharing middleware
-- **dotenv** - Environment variable management
-
-### Deployment Technologies
-- **Vercel** - Frontend hosting and serverless functions platform
-- **Render** - Backend hosting and database services
-- **Neon** - Serverless PostgreSQL database service
-- **Git** - Version control system
-
-### Development Tools
-- **npm** - Package manager for JavaScript
-- **ESLint** - JavaScript linting utility
-- **TypeScript Compiler** - TypeScript compilation
-- **Git** - Distributed version control system
-
-## Application Features
-
-### Authentication System
-- PIN-based user authentication
-- Secure session management
-- Input validation and sanitization
-- Card number verification
-
-### Banking Operations
-- **Account Balance Inquiry** - Real-time balance checking
-- **Cash Deposit** - Add funds to accounts with transaction logging
-- **Cash Withdrawal** - Remove funds with balance validation
-- **Fund Transfer** - Transfer money between accounts with atomic transactions
-- **Transaction History** - Complete audit trail of all account activities
-
-### User Interface
-- **Responsive Design** - Optimized for mobile, tablet, and desktop devices
-- **Material Design** - Modern and consistent visual design language
-- **Smooth Animations** - Enhanced user experience with motion effects
-- **Dark/Light Themes** - Customizable appearance options
-- **Touch-Friendly** - Optimized for touch interactions on mobile devices
-
-### Dashboard Features
-- **Account Overview** - Summary of account balances and status
-- **Quick Actions** - Fast access to common banking operations
-- **Recent Transactions** - Display of latest account activities
-- **Spending Analytics** - Charts and graphs for transaction analysis
-- **Account Management** - Profile and security settings
-
-## Database Schema
-
-### Tables Structure
-
-**customers**
-- `id` - Primary key (SERIAL)
-- `name` - Customer full name (VARCHAR)
-- `pin` - Authentication PIN (VARCHAR)
-- `card_number` - Unique card identifier (VARCHAR)
-
-**accounts**
-- `id` - Primary key (SERIAL)
-- `account_number` - Unique account identifier (VARCHAR)
-- `balance` - Current account balance (DECIMAL)
-- `type` - Account type (VARCHAR)
-- `customer_id` - Foreign key to customers table (INTEGER)
-
-**transactions**
-- `id` - Primary key (SERIAL)
-- `type` - Transaction type (VARCHAR)
-- `amount` - Transaction amount (DECIMAL)
-- `date` - Transaction timestamp (TIMESTAMP)
-- `account_id` - Foreign key to accounts table (INTEGER)
-
-### Sample Data
-- Customer: Manasha (Card: 123456789, PIN: 1234)
-- Account: ACC001 with initial balance of $1000.00
-
-## API Endpoints
+## 🔗 API Endpoints
 
 ### Authentication
-- `POST /api/authenticate` - User login with card number and PIN
+- `POST /api/authenticate` - Customer login
+- `POST /api/technician-auth` - Technician login
 
-### Account Management
-- `GET /api/accounts/:customerId` - Retrieve customer accounts
-- `GET /api/balance/:accountId` - Get account balance
+### Banking Operations
+- `GET /api/accounts/:customerId` - Get accounts
+- `GET /api/balance/:accountId` - Get balance
+- `POST /api/deposit` - Deposit funds
+- `POST /api/withdraw` - Withdraw funds
+- `POST /api/transfer` - Transfer funds
+- `GET /api/transactions/:accountId` - Transaction history
 
-### Transaction Operations
-- `POST /api/deposit` - Deposit funds into account
-- `POST /api/withdraw` - Withdraw funds from account
-- `POST /api/transfer` - Transfer funds between accounts
-- `GET /api/transactions/:accountId` - Get transaction history
+### Settings & Preferences
+- `GET/PUT /api/settings/profile/:customerId` - Profile management
+- `PUT /api/settings/security/:customerId` - Security settings
+- `GET/PUT /api/settings/preferences/:customerId` - App preferences
 
-## Security Features
+### Maintenance (Technician)
+- `POST /api/maintenance/replenish` - Replenish supplies
+- `POST /api/maintenance/diagnose` - Run diagnostics
+- `POST /api/maintenance/upgrade` - Perform upgrades
 
-### Authentication Security
-- PIN-based authentication system
-- Secure password hashing
-- Session management
-- Input validation and sanitization
+## 🗄️ Database Schema
 
-### Data Protection
-- SQL injection prevention through parameterized queries
-- Cross-site scripting (XSS) protection
-- Cross-origin resource sharing (CORS) configuration
-- Environment variable protection for sensitive data
+### Core Tables
+- `customers` - Customer authentication
+- `accounts` - Banking accounts
+- `transactions` - Transaction records
+- `technicians` - Maintenance staff
+- `atms` - ATM machines
+- `maintenance` - Service logs
 
-### Network Security
-- HTTPS encryption for all communications
-- Secure API endpoints with proper error handling
-- Database connection pooling for performance
-- Connection timeout management
+### Settings Tables
+- `user_profiles` - Extended profiles
+- `user_preferences` - App settings
+- `notification_preferences` - Alert settings
 
-## Deployment Architecture
+## 🔒 Security Features
 
-### Development Environment
-- Local PostgreSQL database
-- Node.js backend server on port 5000
-- React frontend on port 3000
-- Environment variables for configuration
+- PIN-based authentication with validation
+- SQL injection prevention via parameterized queries
+- Input sanitization and validation
+- CORS configuration
+- Secure session management
+- Environment variable protection
 
-### Production Environment
-- **Frontend**: Hosted on Vercel with global CDN
-- **Backend**: Hosted on Render with automatic scaling
-- **Database**: Neon serverless PostgreSQL
-- **Domain**: Custom domain with SSL certificate
+## 📜 Available Scripts
 
-### Infrastructure Components
-- **Load Balancing**: Automatic distribution of traffic
-- **Auto Scaling**: Dynamic resource allocation
-- **Monitoring**: Performance and error tracking
-- **Backup**: Automated database backups
+```bash
+npm run dev              # Start frontend dev server
+npm run start-backend    # Start backend server
+npm run install-all      # Install all dependencies
+npm run deploy          # Deploy to production
+```
 
-## Development Workflow
+## 🤝 Contributing
 
-### Local Development Setup
-2. Install dependencies for frontend and backend
-3. Set up PostgreSQL database locally
-4. Configure environment variables
-5. Start development servers
-6. Access application at localhost:3000
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-### Production Deployment
-1. Push code changes to GitHub repository
-2. Automatic deployment triggers on Vercel
-3. Backend deployment on Render
-4. Database schema updates on Neon
-5. Environment variables configuration
-6. SSL certificate provisioning
+## 📄 License
 
-### Testing Strategy
-- Unit tests for individual components
-- Integration tests for API endpoints
-- End-to-end tests for user workflows
-- Performance testing for scalability
-- Security testing for vulnerabilities
+This project is licensed under the MIT License.
 
-## Performance Optimizations
+---
 
-### Frontend Optimizations
-- Code splitting for reduced bundle size
-- Lazy loading for improved initial load time
-- Image optimization and compression
-- Caching strategies for static assets
-- Progressive web app capabilities
-
-### Backend Optimizations
-- Database connection pooling
-- Query optimization and indexing
-- Caching layer for frequently accessed data
-- Asynchronous processing for heavy operations
-- Rate limiting for API protection
-
-### Database Optimizations
-- Proper indexing on frequently queried columns
-- Connection pooling for efficient resource usage
-- Query optimization and execution planning
-- Data partitioning for large datasets
-- Backup and recovery procedures
-
-## Monitoring and Maintenance
-
-### Database Maintenance
-- Regular backup scheduling
-- Performance monitoring and tuning
-- Data integrity checks
-- Index maintenance and optimization
-- Storage capacity planning
-
-### Security Updates
-- Regular dependency updates
-- Security vulnerability scanning
-- Access control reviews
-- Audit logging and monitoring
-- Incident response procedures
-
-## Cost Optimization
-
-### Hosting Costs
-- Vercel free tier for frontend hosting
-- Render free tier for backend services
-- Neon free tier for database hosting
-- Automatic scaling based on usage
-
-### Performance Costs
-- Optimized bundle sizes for faster loading
-- Efficient database queries
-- Caching strategies for reduced server load
-- CDN usage for global content delivery
-
-## Future Enhancements
-
-### Planned Features
-- Multi-currency support
-- Mobile application development
-- Advanced analytics dashboard
-- Biometric authentication
-- QR code payment integration
-- International money transfers
-
-### Technical Improvements
-- GraphQL API implementation
-- Microservices architecture
-- Advanced caching strategies
-- Machine learning for fraud detection
-- Real-time notifications system
-
+**Student**: Olatunde Olowe
+**Project**: ATM Banking System - Full-Stack Implementation
+**Technologies**: React, Node.js, PostgreSQL, TypeScript
